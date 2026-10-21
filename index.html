@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ポケモン カタカナ フラッシュカード</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
+      text-align: center;
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 16px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .container {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .app-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #1e293b;
+      margin: 0;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #64748b;
+      margin: 8px 0 4px 0;
+      text-align: left;
+      padding-left: 4px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .select-btn {
+      flex: 1;
+      padding: 10px 0;
+      font-size: 14px;
+      font-weight: bold;
+      border: 2px solid #cbd5e1;
+      background-color: #ffffff;
+      color: #475569;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .select-btn.active {
+      border-color: #2563eb;
+      background-color: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37,99,235,0.25);
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 20px 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      margin-top: 10px;
+      position: relative;
+    }
+    .dex-badge {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .sound-btn {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #334155;
+    }
+    .pokemon-img-box {
+      width: 230px;
+      height: 230px;
+      margin: 10px auto 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pokemon-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.1));
+    }
+    .name-box {
+      min-height: 64px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 6px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    .char-tile {
+      width: 44px;
+      height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: bold;
+      border-radius: 10px;
+      margin-bottom: 4px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    .char-tile.small {
+      width: 32px;
+      height: 38px;
+      font-size: 20px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+    .char-tile.visible {
+      background-color: #f8fafc;
+      border: 2px solid #cbd5e1;
+      color: #1e293b;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+    }
+    .char-tile.masked {
+      background-color: #f8fafc;
+      border: 2px dashed #94a3b8;
+      color: transparent;
+    }
+    .action-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .action-btn {
+      flex: 1;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 14px 0;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: transform 0.1s ease;
+    }
+    #answer-btn {
+      background-color: #facc15;
+      color: #713f12;
+    }
+    #next-btn {
+      background-color: #3b82f6;
+      color: #ffffff;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="app-header">
+      <h1 class="app-title">ポケモン カタカナ フラッシュカード</h1>
+    </div>
+
+    <div class="section-title">ちほうを えらぶ</div>
+    <div id="region-group" class="btn-group">
+      <button class="select-btn active" onclick="setRegion('paldea')">パルデア</button>
+      <button class="select-btn" onclick="setRegion('galar')">ガラル</button>
+      <button class="select-btn" onclick="setRegion('alola')">アローラ</button>
+      <button class="select-btn" onclick="setRegion('all')">すべて</button>
+    </div>
+
+    <div class="section-title">レベルを えらぶ</div>
+    <div id="level-group" class="btn-group">
+      <button class="select-btn active" onclick="setLevel(1)">レベル1</button>
+      <button class="select-btn" onclick="setLevel(2)">レベル2</button>
+      <button class="select-btn" onclick="setLevel(3)">レベル3</button>
+    </div>
+
+    <div class="card">
+      <div id="dex-id" class="dex-badge">No.0000</div>
+      <button class="sound-btn" onclick="speakCurrent()">🔊 こえ</button>
+
+      <div class="pokemon-img-box">
+        <img id="poke-img" class="pokemon-img" src="" alt="ポケモン">
+      </div>
+
+      <div id="poke-name-box" class="name-box"></div>
+
+      <div class="action-group">
+        <button id="answer-btn" class="action-btn" onclick="showAnswer()">こたえ</button>
+        <button id="next-btn" class="action-btn" onclick="nextPokemon()">つぎへ</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const VOICED_KANA = new Set(['ガ','ギ','グ','ゲ','ゴ','ザ','ジ','ズ','ゼ','ゾ','ダ','ヂ','ヅ','デ','ド','バ','ビ','ブ','ベ','ボ','パ','ピ','プ','ペ','ポ','ヴ']);
+    const SMALL_KANA = new Set(['ァ','ィ','ゥ','ェ','ォ','ッ','ャ','ュ','ョ','ヮ']);
+
+    const GEN1_DATA = "フシギダネ,フシギソウ,フシギバナ,ヒトカゲ,リザード,リザードン,ゼニガメ,カメール,カメックス,キャタピー,トランセル,バタフリー,ビードル,コクーン,スピアー,ポッポ,ピジョン,ピジョット,コラッタ,ラッタ,オニスズメ,オニドリル,アーボ,アーボック,ピカチュウ,ライチュウ,サンド,サンドパン,ニドラン♀,ニドリーナ,ニドクイン,ニドラン♂,ニドリーノ,ニドキング,ピッピ,ピクシー,ロコン,キュウコン,プリン,プクリン,ズバット,ゴルバット,ナゾノクサ,クサイハナ,ラフレシア,パラス,パラセクト,コンパン,モルフォン,ディグダ,ダグトリオ,ニャース,ペルシアン,コダック,ゴルダック,マンキー,オコリザル,ガーディ,ウインディ,ニョロモ,ニョロゾ,ニョロボン,ケーシィ,ユンゲラー,フーディン,ワンリキー,ゴーリキー,カイリキー,マダツボミ,ウツドン,ウツボット,メノクラゲ,ドククラゲ,イシツブテ,ゴローン,ゴローニャ,ポニータ,ギャロップ,ヤドン,ヤドラン,コイル,レアコイル,カモネギ,ドードー,ドードリオ,パウワウ,ジュゴン,ベトベター,ベトベトン,シェルダー,パルシェン,ゴース,ゴースト,ゲンガー,イワーク,スリープ,スリーパー,クラブ,キングラー,ビリリダマ,マルマイン,タマタマ,ナッシー,カラカラ,ガラガラ,サワムラー,エビワラー,ベロリンガ,ドガース,マタドガス,サイホーン,サイドン,ラッキー,モンジャラ,ガルーラ,タッツー,シードラ,トサキント,アズマオウ,ヒトデマン,スターミー,バリヤード,ストライク,ルージュラ,エレブー,ブーバー,カイロス,ケンタロス,コイキング,ギャラドス,ラプラス,メタモン,イーブイ,シャワーズ,サンダース,ブースター,ポリゴン,オムナイト,オムスター,カブト,カブトプス,プテラ,カビゴン,フリーザー,サンダー,ファイヤー,ミニリュウ,ハクリュー,カイリュー,ミュウツー,ミュウ".split(',');
+    const GEN2_DATA = "チコリータ,ベイリーフ,メガニウム,ヒノアラシ,マグマラシ,バクフーン,ワニノコ,アリゲイツ,オーダイル,オタチ,オオタチ,ホーホー,ヨルノズク,レディバ,レディアン,イトマル,アリアドス,クロバット,チョンチー,ランターン,ピチュー,ピィ,ププリン,トゲピー,トゲチック,ネイティ,ネイティオ,メリープ,モココ,デンリュウ,キレイハナ,マリル,マリルリ,ウソッキー,ニョロトノ,ハネッコ,ポポッコ,ワタッコ,エイパム,ヒマナッツ,キマワリ,ヤンヤンマ,ウパー,ヌオー,エーフィ,ブラッキー,ヤミカラス,ヤドキング,ムウマ,アンノーン,ソーナンス,キリンリキ,クヌギダマ,フォレトス,ノコッチ,グライガー,ハガネール,ブルー,グランブル,ハリーセン,ハッサム,ツボツボ,ヘラクロス,ニューラ,ヒメグマ,リングマ,マグマッグ,マグカルゴ,ウリムー,イノムー,サニーゴ,テッポウオ,オクタン,デリバード,マンタイン,エアームド,デルビル,ヘルガー,キングドラ,ゴマゾウ,ドンファン,ポリゴン２,オドシシ,ドーブル,バルキー,カポエラー,ムチュール,エレキッド,ブビィ,ミルタンク,ハピナス,ライコウ,エンテイ,スイクン,ヨーギラス,サナギラス,バンギラス,ルギア,ホウオウ,セレビィ".split(',');
+    const GEN3_DATA = "キモリ,ジュプトル,ジュカイン,アチャモ,ワカシャモ,バシャーモ,ミズゴロウ,ヌマクロー,ラグラージ,ポチエナ,グラエナ,ジグザグマ,マッスグマ,ケムッソ,カラサリス,アゲハント,マユルド,ドクケイル,ハスボー,ハスブレロ,ルンパッパ,タネボー,コノハナ,ダーテング,スバメ,オオスバメ,キャモメ,ペリッパー,ラルトス,キルリア,サーナイト,アメタマ,アメモース,キノココ,キノガッサ,ナマケロ,ヤルキモノ,ケッキング,ツチニン,テッカニン,ヌケニン,ゴニョニョ,ドゴーム,バクオング,マクノシタ,ハリテヤマ,ルリリ,ノズパス,エネコ,エネコロロ,ヤミラミ,クチート,ココドラ,コドラ,ボスゴドラ,アサナン,チャーレム,ラクライ,ライボルト,プラスル,マイナン,バルビート,イルミーゼ,ロゼリア,ゴクリン,マルノーム,キバニア,サメハダー,ホエルコ,ホエルオー,ドンメル,バクーダ,コータス,バネブー,ブーピッグ,パッチール,ナックラー,ビブラーバ,フライゴン,サボネア,ノクタス,チルット,チルタリス,ザングース,ハブネーク,ルナトーン,ソルロック,ドジョッチ,ナマズン,ヘイガニ,シザリガー,ヤジロン,ネンドール,リリーラ,ユレイドル,アノプス,アーマルド,ヒンバス,ミロカロス,ポワルン,カクレオン,カゲボウズ,ジュペッタ,ヨマワル,サマヨール,トロピウス,チリーン,アブソル,ソーナノ,ユキワラシ,オニゴーリ,タマザラシ,トドグラー,トドゼルガ,パールル,ハンテール,サクラビス,ジーランス,ラブカス,タツベイ,コモルー,ボーマンダ,ダンバル,メタング,メタグロス,レジロック,レジアイス,レジスチル,ラティアス,ラティオス,カイオーガ,グラードン,レックウザ,ジラーチ,デオキシス".split(',');
+    const GEN4_DATA = "ナエトル,ハヤシガメ,ドダイトス,ヒコザル,モウカザル,ゴウカザル,ポッチャマ,ポッタイシ,エンペルト,ムックル,ムクバード,ムクホーク,ビッパ,ビーダル,コロボーシ,コロトック,コリンク,ルクシオ,レントラー,スボミー,ロズレイド,ズガイドス,ラムパルド,タテトプス,トリデプス,ミノムッチ,ミノマダム,ガーメイル,ミツハニー,ビークイン,パチリス,ブイゼル,フローゼル,チェリンボ,チェリム,カラナクシ,トリトドン,エテボース,フワンテ,フワライド,ミミロル,ミミロップ,ムウマージ,ドンカラス,ニャルマー,ブニャット,リーシャン,スカンプー,スカタンク,ドーミラー,ドータクン,ウソハチ,マネネ,ピンプク,ペラップ,ミカルゲ,フカマル,ガバイト,ガブリアス,ゴンベ,リオル,ルカリオ,ヒポポタス,カバルドン,スコルピ,ドラピオン,グレッグル,ドクロッグ,マスキッパ,ケイコウオ,ネオラント,タマンタ,ユキカブリ,ユキノオー,マニューラ,ジバコイル,ベロベルト,ドサイドン,モジャンボ,エレキブル,ブーバーン,トゲキッス,メガヤンマ,リーフィア,グレイシア,グライオン,マンムー,ポリゴンＺ,エルレイド,ダイノーズ,ヨノワール,ユキメノコ,ロトム,ユクシー,エムリット,アグノム,ディアルガ,パルキア,ヒードラン,レジギガス,ギラティナ,クレセリア,フィオネ,マナフィ,ダークライ,シェイミ,アルセウス".split(',');
+    const GEN5_DATA = "ビクティニ,ツタージャ,ジャノビー,ジャローダ,ポカブ,チャオブー,エンブオー,ミジュマル,フタチマル,ダイケンキ,ミネズミ,ミルホッグ,ヨーテリー,ハーデリア,ムーランド,チョロネコ,レパルダス,ヤナップ,ヤナッキー,バオップ,バオッキー,ヒヤップ,ヒヤッキー,ムンナ,ムシャーナ,マメパト,ハトーボー,ケンホロウ,シママ,ゼブライカ,ダンゴロ,ガントル,ギガイアス,コロモリ,ココロモリ,モグリュー,ドリュウズ,タブンネ,ドッコラー,ドテッコツ,ローブシン,オタマロ,ガマガル,ガマゲロゲ,ナゲキ,ダゲキ,クルミル,クルマユ,ハハコモリ,フシデ,ホイーガ,ペンドラー,モンメン,エルフーン,チュリネ,ドレディア,バスラオ,メグロコ,ワルビル,ワルビアル,ダルマッカ,ヒヒダルマ,マラカッチ,イシズマイ,イワパレス,ズルッグ,ズルズキン,シンボラー,デスマス,デスカーン,プロトーガ,アバゴーラ,アーケン,アーケオス,ヤブクロン,ダストダス,ゾロア,ゾロアーク,チラーミィ,チラチーノ,ゴチム,ゴチミル,ゴチルゼル,ユニラン,ダブラン,ランクルス,コアルヒー,スワンナ,バニプッチ,バニリッチ,バイバニラ,シキジカ,メブキジカ,エモンガ,カブルモ,シュバルゴ,タマゲタケ,モロバレル,プルリル,ブルンゲル,ママンボウ,バチュル,デンチュラ,テッシード,ナットレイ,ギアル,ギギアル,ギギギアル,シビシラス,シビビール,シビルドン,リグレー,オーベム,ヒトモシ,ランプラー,シャンデラ,キバゴ,オノンド,オノノクス,クマシュン,ツンベアー,フリージオ,チョボマキ,アギルダー,マッギョ,コジョフー,コジョンド,クリムガン,ゴビット,ゴルーグ,コマタナ,キリキザン,バッフロン,ワシボン,ウォーグル,バルチャイ,バルジーナ,クイタラン,アイアント,モノズ,ジヘッド,サザンドラ,メラルバ,ウルガモス,コバルオン,テラキオン,ビリジオン,トルネロス,ボルトロス,レシラム,ゼクロム,ランドロス,キュレム,ケルディオ,メロエッタ,ゲノセクト".split(',');
+    const GEN6_DATA = "ハリマロン,ハリボーグ,ブリガロン,フォッコ,テールナー,マフォクシー,ケロマツ,ゲコガシラ,ゲッコウガ,ホルビー,ホルード,ヤヤコマ,ヒノヤコマ,ファイアロー,コフキムシ,コフーライ,ビビヨン,シシコ,カエンジシ,フラベベ,フラエッテ,フラージェス,メェークル,ゴーゴート,ヤンチャム,ゴロンダ,トリミアン,ニャスパー,ニャオニクス,ヒトツキ,ニダンギル,ギルガルド,シュシュプ,フレフワン,ペロッパフ,ペロリーム,マーイーカ,カラマネロ,カメテテ,ガメノデス,クズモー,ドラミドロ,ウデッポウ,ブロスター,エリキテル,エレザード,チゴラス,ガチゴラス,アマルス,アマルルガ,ニンフィア,ルチャブル,デデンネ,メレシー,ヌメラ,ヌメイル,ヌメルゴン,クレッフィ,ボクレー,オーロット,バケッチャ,パンプジン,カチコール,クレベース,オンバット,オンバーン,ゼルネアス,イベルタル,ジガルデ,ディアンシー,フーパ,ボルケニオン".split(',');
+    const ALOLA_DATA = "モクロー,フクスロー,ジュナイパー,ニャビー,ニャヒート,ガオガエン,アシマリ,オシャマリ,アシレーヌ,ツツケラ,ケララッパ,ドデカバシ,ヤングース,デカグース,アゴジムシ,デンヂムシ,クワガノン,マケンカニ,ケケンカニ,オドリドリ,アブリー,アブリボン,イワンコ,ルガルガン,ヨワシ,ヒドイデ,ドヒドイデ,ドロバンコ,バンバドロ,シズクモ,オニシズクモ,カリキリ,ラランテス,ネマシュ,マシェード,ヤトウモリ,エンニュート,ヌイコグマ,キテルグマ,アマカジ,アママイコ,アマージョ,キュワワー,ヤレユータン,ナゲツケサル,コソクムシ,グソクムシャ,スナバァ,シロデスナ,ナマコブシ,タイプ:ヌル,シルヴァディ,メテノ,ネッコアラ,バクガメス,トゲデマル,ミミッキュ,ハギギシリ,ジジーロン,ダダリン,ジャラコ,ジャランゴ,ジャラランガ,カプ・コケコ,カプ・テテフ,カプ・ブルル,カプ・レヒレ,コスモッグ,コスモウム,ソルガレオ,ルナアーラ,ウツロイド,マッシブーン,フェローチェ,デンジュモク,テッカグヤ,カミツルギ,アクジキング,ネクロズマ,マギアナ,マーシャドー,ベベノム,アーゴヨン,ツンデツンデ,ズガドーン,ゼラオラ,メルタン,メルメタル".split(',');
+    const GALAR_DATA = "サルノリ,バチンキー,ゴリランダー,ヒバニー,ラビフット,エースバーン,メッソン,ジメレオン,インテレオン,ホシガリス,ヨクバリス,ココガラ,アオガラス,アーマーガア,サッチムシ,レドームシ,イオルブ,クスネ,フォクスライ,ヒメンカ,ワタシラガ,ウールー,バイウールー,カムカメ,カジリガメ,ワンパチ,パルスワン,タンドン,トロッゴン,セキタンザン,カジッチュ,アップリュー,タルップル,スナヘビ,サダイジャ,ウッウ,サシカマス,カマスジョー,エレズン,ストリンダー,ヤクデ,マルヤクデ,タタッコ,オトスパス,ヤバチャ,ポットデス,ミブリム,テブリム,ブリムオン,ベロバー,ギモー,オーロンゲ,タチフサグマ,ニャイキング,サニゴーン,ネギガナイト,バリコオル,デスバーン,マホミル,マホイップ,タイレーツ,バチンウニ,ユキハミ,モスノウ,イシヘンジン,コオリッポ,イエッサン,モルペコ,ゾウドウ,ダイオウドウ,パッチラゴン,パッチルドン,ウオノラゴン,ウオチルドン,ジュラルドン,ドラメシヤ,ドロンチ,ドラパルト,ザシアン,ザマゼンタ,ムゲンダイナ,ダクマ,ウーラオス,ザルード,レジエレキ,レジドラゴ,ブリザポス,レイスポス,バドレックス,アヤシシ,バサギリ,ガチグマ,イダイトウ,オオニューラ,ハリーマン,ラブトロス".split(',');
+    const PALDEA_DATA = "ニャオハ,ニャローテ,マスカーニャ,ホゲータ,アチゲータ,ラウドボーン,クワッス,ウェルカモ,ウェーニバル,グルトン,パフュートン,タマンチュラ,ワナイダー,マメバッタ,エクスレッグ,パモ,パモット,パーモット,ワッカネズミ,イッカネズミ,パピモッチ,バウッツェル,ミニーブ,オリーニョ,オリーヴァ,イキリンコ,コジオ,ジオヅム,キョジオーン,カルボウ,グレンアルマ,ソウブレイズ,ズピカ,ハラバリー,カイデン,タイカイデン,オラチフ,マフィティフ,シルシュルー,タギングル,アノクサ,アノホラグサ,ノノクラゲ,リククラゲ,ガケガニ,カプサイジ,スコヴィラン,シガロコ,ベラカス,ヒラヒナ,クエスパトラ,カヌチャン,ナカヌチャン,デカヌチャン,ウミディグダ,ウミトリオ,オトシドリ,ナミイルカ,イルカマン,ブロロン,ブロロローム,モトトカゲ,ミミズズ,キラーメ,キラフロル,ボチ,ハカドッグ,カラミンゴ,アルクジラ,ハルクジラ,ミガルーサ,ヘイラッシャ,シャリタツ,コノヨザル,ドオー,リキキリン,ノココッチ,ドドゲザン,イダイナキバ,サケブシッポ,アラブルタケ,ハバタクカミ,チヲハウハネ,スナノケガワ,テツノワダチ,テツノツツミ,テツノカイナ,テツノコウベ,テツノドクガ,テツノイバラ,セビエ,セゴール,セグレイブ,コレクレー,サーフゴー,チオンジェン,パオジアン,ディンルー,イーユイ,トドロクツキ,テツノブジン,コライドン,ミライドン,ウネルミナモ,テツノイサハ,カミッチュ,チャデス,ヤバソチャ,イイネイヌ,マシマシラ,キチキギス,オーガポン,ブリジュラス,カミツオロチ,ウガツホムラ,タケルライコ,テツノイワオ,テツノカシラ,テラパゴス,モモワロウ".split(',');
+
+    function makeList(names, startId) {
+      return names.map((name, i) => ({ id: startId + i, name: name }));
+    }
+
+    const POKEMON_DB = {
+      paldea: makeList(PALDEA_DATA, 906),
+      galar: makeList(GALAR_DATA, 810),
+      alola: makeList(ALOLA_DATA, 722)
+    };
+    POKEMON_DB.all = [
+      ...makeList(GEN1_DATA, 1),
+      ...makeList(GEN2_DATA, 152),
+      ...makeList(GEN3_DATA, 252),
+      ...makeList(GEN4_DATA, 387),
+      ...makeList(GEN5_DATA, 494),
+      ...makeList(GEN6_DATA, 650),
+      ...POKEMON_DB.alola,
+      ...POKEMON_DB.galar,
+      ...POKEMON_DB.paldea
+    ];
+
+    let currentRegion = 'paldea';
+    let currentLevel = 1;
+    let currentPokemon = null;
+    let maskedIndices = new Set();
+    let isAnswerShown = false;
+
+    function setRegion(region) {
+      currentRegion = region;
+      const order = ['paldea', 'galar', 'alola', 'all'];
+      const activeIndex = order.indexOf(region);
+      document.querySelectorAll('#region-group .select-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === activeIndex);
+      });
+      nextPokemon();
+    }
+
+    function setLevel(lvl) {
+      currentLevel = lvl;
+      document.querySelectorAll('#level-group .select-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === (lvl - 1));
+      });
+      nextPokemon();
+    }
+
+    function nextPokemon() {
+      const list = POKEMON_DB[currentRegion];
+      currentPokemon = list[Math.floor(Math.random() * list.length)];
+      isAnswerShown = false;
+
+      document.getElementById('dex-id').textContent = 'No.' + String(currentPokemon.id).padStart(4, '0');
+
+      const imgElem = document.getElementById("poke-img");
+      const localPath = "images/" + currentPokemon.id + ".png";
+      const webPath = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/" + currentPokemon.id + ".png";
+
+      imgElem.onerror = function() {
+        if (this.src !== webPath) {
+          this.src = webPath;
+        }
+      };
+      imgElem.src = localPath;
+
+      generateMask();
+      renderTiles(false);
+    }
+
+    function generateMask() {
+      maskedIndices.clear();
+      const chars = currentPokemon.name.split("");
+      const len = chars.length;
+
+      if (currentLevel === 3) {
+        chars.forEach((_, i) => maskedIndices.add(i));
+      } else if (currentLevel === 1) {
+        let candidates = [];
+        chars.forEach((c, idx) => {
+          if (!VOICED_KANA.has(c)) candidates.push(idx);
+        });
+        if (candidates.length === 0) candidates = chars.map((_, i) => i);
+        const randomIndex = candidates[Math.floor(Math.random() * candidates.length)];
+        maskedIndices.add(randomIndex);
+      } else if (currentLevel === 2) {
+        let targetCount = Math.max(2, Math.floor(len / 3) + 1);
+        if (len <= 2) {
+          targetCount = Math.min(len, 2);
+        } else {
+          targetCount = Math.min(len - 1, targetCount);
+        }
+        const allIndices = chars.map((_, i) => i);
+        const shuffled = allIndices.sort(() => 0.5 - Math.random());
+        shuffled.slice(0, targetCount).forEach(i => maskedIndices.add(i));
+      }
+    }
+
+    function renderTiles(showAll) {
+      const box = document.getElementById("poke-name-box");
+      box.innerHTML = "";
+      const chars = currentPokemon.name.split("");
+
+      chars.forEach((c, i) => {
+        const tile = document.createElement("div");
+        tile.className = "char-tile";
+        if (SMALL_KANA.has(c)) {
+          tile.classList.add("small");
+        }
+        if (showAll || !maskedIndices.has(i)) {
+          tile.classList.add("visible");
+          tile.textContent = c;
+        } else {
+          tile.classList.add("masked");
+          tile.textContent = "";
+        }
+        box.appendChild(tile);
+      });
+    }
+
+    function showAnswer() {
+      isAnswerShown = true;
+      renderTiles(true);
+      speakCurrent();
+    }
+
+    function speakCurrent() {
+      if (!currentPokemon || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const ut = new SpeechSynthesisUtterance(currentPokemon.name);
+      ut.lang = 'ja-JP';
+      ut.rate = 0.9;
+      window.speechSynthesis.speak(ut);
+    }
+
+    nextPokemon();
+  </script>
+</body>
+</html>
